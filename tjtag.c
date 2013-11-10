@@ -59,6 +59,18 @@
 #define TRUE  1
 #define FALSE 0
 
+#ifdef RASPPI
+   // I/O access
+   volatile unsigned *gpio;
+
+   #define INP_GPIO(g) *(gpio+((g)/10)) &= ~(7<<(((g)%10)*3))
+   #define OUT_GPIO(g) *(gpio+((g)/10)) |=  (1<<(((g)%10)*3))
+   #define SET_GPIO_ALT(g,a) *(gpio+(((g)/10))) |= (((a)<=3?(a)+4:(a)==4?3:2)<<(((g)%10)*3))
+
+   #define GPIO_SET *(gpio+7)  // sets   bits which are 1 ignores bits which are 0
+   #define GPIO_CLR *(gpio+10) // clears bits which are 1 ignores bits which are 0
+   #define GPIO_GET *(gpio+0xd) // get bits
+#endif
 
 static unsigned int ctrl_reg;
 
@@ -472,6 +484,61 @@ void lpt_openport(void)
 
 #else                     // ---- Compiler Specific Code ----
 
+#ifdef RASPPI          // ---- Compiler Specific Code ----
+
+   int mem_fd;
+   char *gpio_mem, *gpio_map;
+
+   /* open /dev/mem */
+   if ((mem_fd = open("/dev/mem", O_RDWR|O_SYNC) ) < 0) {
+      printf("can't open /dev/mem \n");
+      exit(-1);
+   }
+
+   // Allocate MAP block
+   if ((gpio_mem = malloc(BLOCK_SIZE + (PAGE_SIZE - 1))) == NULL) {
+      printf("allocation error\n");
+      exit(-1);
+   }
+
+   // Make sure pointer is on 4K boundary
+   if ((unsigned long) gpio_mem % PAGE_SIZE)
+      gpio_mem += PAGE_SIZE - ((unsigned long) gpio_mem % PAGE_SIZE);
+
+   /* mmap GPIO */
+   gpio_map = mmap(
+      (caddr_t) gpio_mem,
+      BLOCK_SIZE,
+      PROT_READ|PROT_WRITE,
+      MAP_SHARED|MAP_FIXED,
+      mem_fd,
+      GPIO_BASE
+   );
+
+   if ((long) gpio_map < 0) {
+      printf("mmap error %ld\n", (long) gpio_map);
+      exit(-1);
+   }
+
+   close(mem_fd);
+
+
+   // Always use volatile pointer!
+   gpio = (volatile unsigned *) gpio_map;
+
+   // Set TDO as input and TMS,TCK and TDI as output
+   
+   INP_GPIO(TDO);
+   INP_GPIO(TMS);
+   INP_GPIO(TCK);
+   INP_GPIO(TDI);
+
+   OUT_GPIO(TMS);
+   OUT_GPIO(TCK);
+   OUT_GPIO(TDI);
+
+#else
+
 #ifdef __FreeBSD__     // ---- Compiler Specific Code ----
 
     pfd = open("/dev/ppi0", O_RDWR);
@@ -505,12 +572,18 @@ void lpt_openport(void)
 #endif
 
 #endif
+
+#endif
 }
 
 
 void lpt_closeport(void)
 {
 #ifndef WINDOWS_VERSION   // ---- Compiler Specific Code ----
+
+#ifdef RASPPI
+
+#else
 
 #ifndef __FreeBSD__    // ---- Compiler Specific Code ----
 
@@ -526,6 +599,8 @@ void lpt_closeport(void)
     close(pfd);
 
 #endif
+
+#endif
 }
 
 // Yoon's extensions for exiting debug mode
@@ -538,10 +613,30 @@ static void return_from_debug_mode(void)
 
 static unsigned char clockin(int tms, int tdi)
 {
+
+#ifdef RASPPI
+    unsigned int data;
+#else
     unsigned char data;
+#endif
 
     tms = tms ? 1 : 0;
     tdi = tdi ? 1 : 0;
+
+#ifdef RASPPI
+
+    data = (tms << TMS) | (tdi << TDI);
+    cable_wait();
+    GPIO_CLR = (1 << TCK) | (1 << TMS) | (1 << TDI);
+    GPIO_SET = data;
+    cable_wait();
+    GPIO_SET = 1 << TCK;
+
+    data = GPIO_GET;
+    data = (data >> TDO) & 1;
+
+#else
+
 // yoon's remark we set wtrst_n to be d4 so we are going to drive it low
     if (wiggler) data = (1 << WTDO) | (0 << WTCK) | (tms << WTMS) | (tdi << WTDI)| (1 << WTRST_N);
     else        data = (1 << TDO) | (0 << TCK) | (tms << TMS) | (tdi << TDI);
@@ -574,6 +669,8 @@ static unsigned char clockin(int tms, int tdi)
     data ^= 0x80;
     data >>= wiggler?WTDO:TDO;
     data &= 1;
+
+#endif
 
     return data;
 }

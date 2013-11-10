@@ -46,6 +46,10 @@
 #define uint8                   unsigned char
 */
 
+#ifdef RASPPI
+   #include <sys/mman.h>
+#endif
+
 #define TRUE  1
 #define FALSE 0
 
@@ -91,22 +95,39 @@ kseg2   0xc0000000 - 0xffffffff  kernel-virtual,  mapped
 
 
 */
+#ifdef RASPPI
 
-// --- Xilinx Type Cable ---
+   // --- Pi Cable ---
+   #define TDI     24
+   #define TCK     22
+   #define TMS     23
+   #define TDO     17
 
-#define TDI     0
-#define TCK     1
-#define TMS     2
-#define TDO     4
+   // --- Pi GPIO ---
+   #define BCM2708_PERI_BASE  0x20000000
+   #define GPIO_BASE          (BCM2708_PERI_BASE + 0x200000) /* GPIO controller */
+   #define PAGE_SIZE          (4 * 1024)
+   #define BLOCK_SIZE         (4 * 1024)
 
-// ---Wiggler Type Cable ---
+#else
 
-#define WTDI      3
-#define WTCK      2
-#define WTMS      1
-#define WTDO      7
-#define WTRST_N   4
-#define WSRST_N   0
+   // --- Xilinx Type Cable ---
+
+   #define TDI     0
+   #define TCK     1
+   #define TMS     2
+   #define TDO     4
+
+   // ---Wiggler Type Cable ---
+
+   #define WTDI      3
+   #define WTCK      2
+   #define WTMS      1
+   #define WTDO      7
+   #define WTRST_N   4
+   #define WSRST_N   0
+
+#endif
 
 #define JTAG_ENABLE 0x10
 #define TDOMASK 0x10
