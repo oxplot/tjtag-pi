@@ -4,11 +4,11 @@ which eliminates the need for a PC with parallel port.
 WARNING
 =======
 
-Be warned that incorrect usage of this tool can lead to a point of no
-return situation. Before you do anything besides what is described here,
-please do research on how to use this tool. A good starting point is the
+Be warned that incorrect usage can lead to a point of no return
+situation. Before you do anything besides what is described here, please
+do research on how to use this tool. A good starting point is the
 excellent and cautionary `guide.pdf` written by the HairyDairyMaid, the
-original author of this tool. Always backup before flashing.
+original author. Always backup before flashing.
 
 Requirements
 ============
@@ -35,7 +35,7 @@ Setup
 
 If at this point, your SoC and flash is recognized, you're all set.
 Enjoy your beverage and look for an appropriate guide that explains how
-to use this tool to revive/upgrade your router's firmware.
+to use tjtag to revive/upgrade your router's firmware.
 
 [jumper]: http://www.seeedstudio.com/depot/1-pin-dualfemale-jumper-wire-100mm-50pcs-pack-p-260.html?cPath=44
 [tjtag]: http://sourceforge.net/projects/tjtag/
