@@ -7,7 +7,7 @@ WARNING
 Be warned that incorrect usage of this tool can lead to a point of no
 return situation. Before you do anything besides what is described here,
 please do research on how to use this tool. A good starting point is the
-excellent and cautionary guide.pdf written by the HairyDairyMaid, the
+excellent and cautionary `guide.pdf` written by the HairyDairyMaid, the
 original author of this tool. Always backup before flashing.
 
 Requirements
@@ -21,7 +21,7 @@ Requirements
 Setup
 =====
 
- 1. Hook up the two boards as per the diagram in wiring.jpg
+ 1. Hook up the two boards as per the diagram in `wiring.jpg`
  2. Power up your WRT
  3. Checkout the code, compile and run it
 
