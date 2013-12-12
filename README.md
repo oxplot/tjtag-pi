@@ -37,6 +37,14 @@ If at this point, your SoC and flash is recognized, you're all set.
 Enjoy your beverage and look for an appropriate guide that explains how
 to use tjtag to revive/upgrade your router's firmware.
 
+Notes
+=====
+
+ * If you have issues with reliability of your connection, you can slow
+   down the speed of _tjtag_ by using `/delay:N` command line option.
+   `N` is the amount of time to delay flipping the clock signal. The
+   higher the value, the slower the transfer rate.
+
 [jumper]: http://www.seeedstudio.com/depot/1-pin-dualfemale-jumper-wire-100mm-50pcs-pack-p-260.html?cPath=44
 [tjtag]: http://sourceforge.net/projects/tjtag/
 [pi]: http://www.raspberrypi.org/
