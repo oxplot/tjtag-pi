@@ -73,6 +73,7 @@
 #endif
 
 static unsigned int ctrl_reg;
+volatile unsigned int dcounter;
 
 int pfd;
 int instruction_length;
@@ -123,7 +124,7 @@ unsigned int    data_register;
 unsigned int    address_register;
 unsigned int    proc_id;
 unsigned int    xbit = 0;
-unsigned int    frequency;
+unsigned int    delay = 0;
 unsigned int    bcmproc = 0;
 unsigned int    swap_endian=0;
 unsigned int    bigendian=0;
@@ -626,11 +627,11 @@ static unsigned char clockin(int tms, int tdi)
 #ifdef RASPPI
 
     data = (tms << TMS) | (tdi << TDI);
-    cable_wait();
     GPIO_CLR = (1 << TCK) | (1 << TMS) | (1 << TDI);
     GPIO_SET = data;
     cable_wait();
     GPIO_SET = 1 << TCK;
+    cable_wait();
 
     data = GPIO_GET;
     data = (data >> TDO) & 1;
@@ -1360,16 +1361,10 @@ void chip_shutdown(void)
 void
 cable_wait( void )
 {
-    int s;
+    if (!delay)
+      return;
 
-    if (!frequency)
-        return;
-
-    s = 1000000 / frequency / 2;
-    if (s == 0)
-        s = 1;
-
-    tmicro( s );
+    for (dcounter = 0; dcounter < delay; dcounter++);
 
 }
 
@@ -2861,6 +2856,7 @@ void show_usage(void)
             "            /instrlen:XX ....... set instruction length manually\n"
             "            /wiggler ........... use wiggler cable\n"
             "            /bypass ............ Unlock Bypass command & disable polling\n"
+            "            /delay:XXXXXX ...... add delay to communication\n"
             "            /st5 ............... Use Speedtouch ST5xx flash routines instead of WRT routines\n"
             "            /reboot............. sets the process and reboots\n"
 	        "		 /swap_endian........ swap endianess during backup - most Atheros based routers\n"
@@ -3185,7 +3181,7 @@ int main(int argc, char** argv)
             else if (strcasecmp(choice,"/wiggler")==0)         wiggler = 1;
             else if (strcasecmp(choice,"/st5")==0)			   speedtouch = 1;
             else if (strcasecmp(choice,"/flash_debug")==0)     Flash_DEBUG = 1;
-            else if (strncasecmp(choice,"/freq:",6)==0)        frequency = strtoul(((char *)choice + 6),NULL,10);
+            else if (strncasecmp(choice,"/delay:",7)==0)       delay = strtoul(((char *)choice + 7),NULL,10);
             else if (strcasecmp(choice,"/xbit")==0)            xbit = 1;
             else if (strcasecmp(choice,"/swap_endian")==0)      swap_endian = 1;
             else
