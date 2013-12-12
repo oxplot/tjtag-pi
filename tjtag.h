@@ -98,10 +98,10 @@ kseg2   0xc0000000 - 0xffffffff  kernel-virtual,  mapped
 #ifdef RASPPI
 
    // --- Pi Cable ---
-   #define TDI     24
-   #define TCK     22
-   #define TMS     23
-   #define TDO     17
+   #define TDI     17
+   #define TCK     7
+   #define TMS     24
+   #define TDO     23
 
    // --- Pi GPIO ---
    #define BCM2708_PERI_BASE  0x20000000
