@@ -44,6 +44,11 @@ Notes
    down the speed of _tjtag_ by using `/delay:N` command line option.
    `N` is the amount of time to delay flipping the clock signal. The
    higher the value, the slower the transfer rate.
+ * Due to bit-banging nature of the operation of tjtag, various things
+   affect the transfer speed. The one with most degrading effect is the
+   progress output. Therefore it is recommended to use `/silent` command
+   line option and redirect outputs to `/dev/null` (ie using
+   `&> /dev/null`), after having made sure everything works OK.
 
 [jumper]: http://www.seeedstudio.com/depot/1-pin-dualfemale-jumper-wire-100mm-50pcs-pack-p-260.html?cPath=44
 [tjtag]: http://sourceforge.net/projects/tjtag/
